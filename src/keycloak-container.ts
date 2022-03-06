@@ -1,18 +1,116 @@
 import { GenericContainer, StartedTestContainer } from 'testcontainers'
+import { ExecResult } from 'testcontainers/dist/docker/types'
 import { AbstractStartedContainer } from 'testcontainers/dist/modules/abstract-started-container'
+import { LogWaitStrategy } from 'testcontainers/dist/wait-strategy'
 
 export class KeycloakContainer extends GenericContainer {
-  constructor(image: string) {
+  private waitingLog = 'Admin console listening on http://127.0.0.1:9990'
+  private adminUsername = 'admin'
+  private adminPassword = 'admin'
+
+  constructor(image: string = 'jboss/keycloak:16.1.1') {
     super(image)
   }
 
+  public withWaitingLog(log: string) {
+    this.waitingLog = log
+  }
+
+  public withAdminUsername(username: string) {
+    this.adminUsername = username
+    return this
+  }
+
+  public withAdminPassword(password: string) {
+    this.adminPassword = password
+    return this
+  }
+
   public async start(): Promise<StartedKeycloakContainer> {
-    return new StartedKeycloakContainer(await super.start())
+    this.withWaitStrategy(new LogWaitStrategy(this.waitingLog))
+      .withEnv('KEYCLOAK_USER', this.adminUsername)
+      .withEnv('KEYCLOAK_PASSWORD', this.adminPassword)
+    return new StartedKeycloakContainer(await super.start(), this.adminUsername, this.adminPassword)
   }
 }
 
 export class StartedKeycloakContainer extends AbstractStartedContainer {
-  constructor(startedTestContainer: StartedTestContainer) {
+  private KCADM = `/opt/jboss/keycloak/bin/kcadm.sh`
+  private SERVER = 'http://localhost:8080'
+
+  constructor(
+    startedTestContainer: StartedTestContainer,
+    private readonly adminUsername: string,
+    private readonly adminPassword: string
+  ) {
     super(startedTestContainer)
+  }
+
+  public getAdminUsername() {
+    return this.adminUsername
+  }
+
+  public getAdminPassword() {
+    return this.adminPassword
+  }
+
+  private async runCmd(command: string): Promise<string> {
+    const commandArray = command.split(' ')
+    const execResult = await this.exec(commandArray)
+    if (execResult.exitCode === 0) {
+      return Promise.resolve(execResult.output.trim())
+    } else {
+      return Promise.reject(execResult.output.trim())
+    }
+  }
+
+  public async configCredentials(realmName: string, user: string, password: string) {
+    return await this.runCmd(
+      `${this.KCADM} config credentials --server ${this.SERVER}/auth --realm ${realmName} --user ${user} --password ${password}`
+    )
+  }
+
+  public async createRealm(realmName: string, enabled: boolean = true) {
+    return await this.runCmd(`${this.KCADM} create realms -s realm=${realmName} -s enabled=${enabled}`)
+  }
+
+  public async getRealm(realmName: string) {
+    const realmResult = await this.runCmd(`${this.KCADM} get realms/${realmName}`)
+    const realm: KeycloakRealm = JSON.parse(realmResult)
+    return realm
+  }
+
+  public async createUser(
+    realmName: string,
+    username: string,
+    firstName: string,
+    lastName: string,
+    enabled: boolean = true
+  ) {
+    return await this.runCmd(
+      `${this.KCADM} create users -r ${realmName} -s username=${username} -s firstName=${firstName} -s lastName=${lastName} -s enabled=${enabled}`
+    )
+  }
+
+  public async getUserById(realmName: string, userId: string) {
+    const userResult = await this.runCmd(`${this.KCADM} get users/${userId} -r ${realmName}`)
+    const user: KeycloakUser = JSON.parse(userResult)
+    return user
+  }
+
+  public async getUserIdByUsername(realmName: string, username: string) {
+    const usersResult = await this.runCmd(`${this.KCADM} get users -r ${realmName} -q username=${username}`)
+    const userArray: Array<KeycloakUser> = JSON.parse(usersResult)
+    if (userArray.length === 1) {
+      return Promise.resolve(userArray[0].id)
+    } else {
+      return Promise.reject(`Cannot find username '${username}' in realm '${realmName}'`)
+    }
+  }
+
+  public async setUserPassword(realmName: string, username: string, password: string) {
+    return await this.runCmd(
+      `${this.KCADM} set-password -r ${realmName} --username ${username} --new-password ${password}`
+    )
   }
 }
