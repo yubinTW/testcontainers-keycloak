@@ -36,4 +36,23 @@ describe('Keycloak Container Test', () => {
     expect(user.id).toBe(userId)
     expect(user.username).toBe('user01')
   })
+
+  it('client operations: create, get', async () => {
+    await keycloak.createClient(
+      'demo',
+      'client01',
+      'client01Secret',
+      ['http://localhost:8888', 'http://localhost:8888/callback'],
+      ['http://localhost:8888/home']
+    )
+    const cid = await keycloak.getCidByClientId('demo', 'client01')
+    const client = await keycloak.getClientByCid('demo', cid)
+    const clientSecret = await keycloak.getClientSecretByCid('demo', cid)
+
+    expect(client.id).toBe(cid)
+    expect(client.clientId).toBe('client01')
+    expect(client.redirectUris).toHaveLength(2)
+    expect(client.webOrigins).toHaveLength(1)
+    expect(clientSecret.value).toBe('client01Secret')
+  })
 })

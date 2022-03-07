@@ -142,3 +142,40 @@ type KeycloakUser = {
     manage: boolean
   }
 }
+
+type KeycloakClient = {
+  id: string
+  clientId: string
+  surrogateAuthRequired: boolean
+  enabled: boolean
+  alwaysDisplayInConsole: boolean
+  clientAuthenticatorType: string
+  redirectUris: Array<string>
+  webOrigins: Array<string>
+  notBefore: number
+  bearerOnly: boolean
+  consentRequired: boolean
+  standardFlowEnabled: boolean
+  implicitFlowEnabled: boolean
+  directAccessGrantsEnabled: boolean
+  serviceAccountsEnabled: boolean
+  publicClient: boolean
+  frontchannelLogout: boolean
+  protocol: string
+  attributes: {}
+  authenticationFlowBindingOverrides: {}
+  fullScopeAllowed: boolean
+  nodeReRegistrationTimeout: number
+  defaultClientScopes: Array<string>
+  optionalClientScopes: Array<string>
+  access: {
+    view: boolean
+    configure: boolean
+    manage: boolean
+  }
+}
+
+type ClientSecret = {
+  type: string
+  value: string
+}

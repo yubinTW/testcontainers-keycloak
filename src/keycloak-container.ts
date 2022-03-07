@@ -1,5 +1,4 @@
 import { GenericContainer, StartedTestContainer } from 'testcontainers'
-import { ExecResult } from 'testcontainers/dist/docker/types'
 import { AbstractStartedContainer } from 'testcontainers/dist/modules/abstract-started-container'
 import { LogWaitStrategy } from 'testcontainers/dist/wait-strategy'
 
@@ -112,5 +111,44 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     return await this.runCmd(
       `${this.KCADM} set-password -r ${realmName} --username ${username} --new-password ${password}`
     )
+  }
+
+  public async createClient(
+    realmName: string,
+    clientId: string,
+    clientSecret: string,
+    redirectUris: Array<string> = [],
+    webOrigins: Array<string> = [],
+    enabled: boolean = true
+  ) {
+    const redirectUrisString = redirectUris.map((uri) => `"${uri}"`).join(',')
+    const webOriginsString = webOrigins.map((uri) => `"${uri}"`).join(',')
+    return await this.runCmd(
+      `${this.KCADM} create clients -r ${realmName} -s clientId=${clientId} -s secret=${clientSecret} -s enabled=${enabled} -s redirectUris=[${redirectUrisString}] -s webOrigins=[${webOriginsString}]`
+    )
+  }
+
+  public async getCidByClientId(realmName: string, clientId: string) {
+    const clientsResult = await this.runCmd(
+      `${this.KCADM} get clients -r ${realmName} --fields id -q clientId=${clientId}`
+    )
+    const clients: Array<KeycloakClient> = JSON.parse(clientsResult)
+    if (clients.length === 1) {
+      return Promise.resolve(clients[0]['id'])
+    } else {
+      return Promise.reject(`Can't find client '${clientId}' in realm '${realmName}'`)
+    }
+  }
+
+  public async getClientByCid(realmName: string, cid: string) {
+    const clientResult = await this.runCmd(`${this.KCADM} get clients/${cid} -r ${realmName}`)
+    const client: KeycloakClient = JSON.parse(clientResult)
+    return client
+  }
+
+  public async getClientSecretByCid(realmName: string, cid: string) {
+    const clientSecretResult = await this.runCmd(`${this.KCADM} get clients/${cid}/client-secret -r ${realmName}`)
+    const secret: ClientSecret = JSON.parse(clientSecretResult)
+    return secret
   }
 }
