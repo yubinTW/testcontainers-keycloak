@@ -119,12 +119,13 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     clientSecret: string,
     redirectUris: Array<string> = [],
     webOrigins: Array<string> = [],
+    directAccessGrantsEnabled: boolean = true,
     enabled: boolean = true
   ) {
     const redirectUrisString = redirectUris.map((uri) => `"${uri}"`).join(',')
     const webOriginsString = webOrigins.map((uri) => `"${uri}"`).join(',')
     return await this.runCmd(
-      `${this.KCADM} create clients -r ${realmName} -s clientId=${clientId} -s secret=${clientSecret} -s enabled=${enabled} -s redirectUris=[${redirectUrisString}] -s webOrigins=[${webOriginsString}]`
+      `${this.KCADM} create clients -r ${realmName} -s clientId=${clientId} -s secret=${clientSecret} -s enabled=${enabled} -s redirectUris=[${redirectUrisString}] -s webOrigins=[${webOriginsString}] -s directAccessGrantsEnabled=${directAccessGrantsEnabled}`
     )
   }
 
