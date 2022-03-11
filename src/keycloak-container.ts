@@ -1,6 +1,7 @@
 import { GenericContainer, StartedTestContainer } from 'testcontainers'
 import { AbstractStartedContainer } from 'testcontainers/dist/modules/abstract-started-container'
 import { LogWaitStrategy } from 'testcontainers/dist/wait-strategy'
+import qs from 'qs'
 
 export class KeycloakContainer extends GenericContainer {
   private waitingLog = 'Admin console listening on http://127.0.0.1:9990'
@@ -151,5 +152,36 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     const clientSecretResult = await this.runCmd(`${this.KCADM} get clients/${cid}/client-secret -r ${realmName}`)
     const secret: ClientSecret = JSON.parse(clientSecretResult)
     return secret
+  }
+
+  public async getAccessToken(
+    realmName: string,
+    username: string,
+    password: string,
+    client_id: string,
+    client_secret: string
+  ) {
+    const tokenEndpoint = `${this.SERVER}/auth/realms/${realmName}/protocol/openid-connect/token`
+
+    const data = qs.stringify({
+      username,
+      password,
+      client_id,
+      client_secret,
+      grant_type: 'password'
+    })
+
+    const curlCommand = `curl ${tokenEndpoint} -X POST -d ${data}`
+
+    try {
+      const curlResult = await this.runCmd(curlCommand)
+      const accessToken: string = JSON.parse(curlResult)['access_token']
+      if (accessToken && accessToken.length > 0) return Promise.resolve(accessToken)
+      else {
+        return Promise.reject(`Failed to get aaccess token: ${curlResult}`)
+      }
+    } catch (error) {
+      return Promise.reject(`Failed to get aaccess token: ${error}`)
+    }
   }
 }

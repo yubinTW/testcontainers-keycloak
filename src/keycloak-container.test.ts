@@ -55,4 +55,9 @@ describe('Keycloak Container Test', () => {
     expect(client.webOrigins).toHaveLength(1)
     expect(clientSecret.value).toBe('client01Secret')
   })
+
+  it('should get sccess token', async () => {
+    const accessToken = await keycloak.getAccessToken('demo', 'user01', 'user01password', 'client01', 'client01Secret')
+    expect(accessToken).toBeTruthy()
+  })
 })

@@ -1,7 +1,7 @@
 {
   "name": "testcontainers-keycloak",
   "author": "Yubin, Hsu",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "main": "dist/keycloak-container",
   "types": "dist/keycloak-container",
   "keywords": [
@@ -29,11 +29,13 @@
     "fix-prettier": "prettier --write \"./{src,test}/**/*.ts\""
   },
   "dependencies": {
+    "qs": "^6.10.3",
     "testcontainers": "^8.4.0"
   },
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/node": "^16.11.26",
+    "@types/qs": "^6.9.7",
     "jest": "^27.5.1",
     "prettier": "^2.5.1",
     "ts-jest": "^27.1.3",
