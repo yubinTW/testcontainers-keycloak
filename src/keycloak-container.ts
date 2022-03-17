@@ -64,6 +64,9 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     }
   }
 
+  /**
+   * start an authenticated session
+   */
   public async configCredentials(realmName: string, user: string, password: string) {
     return await this.runCmd(
       `${this.KCADM} config credentials --server ${this.SERVER}/auth --realm ${realmName} --user ${user} --password ${password}`
