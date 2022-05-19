@@ -1,6 +1,8 @@
 # Testcontainers-Keycloak
 
-A testcontainer for Keycloak
+A testcontainers for 
+
+https://www.npmjs.com/package/testcontainers-keycloak
 
 ## Usage
 
@@ -15,7 +17,7 @@ const keycloak = await new KeycloakContainer()
 // start a admin session
 await keycloak.configCredentials('master', 'admin', 'admin')
 
-// accroding to your scenarios
+// according to your scenarios
 // create the realm, user and client
 await keycloak.createRealm('demo')
 await keycloak.createUser('demo', 'user01', 'yubin', 'hsu', true)
