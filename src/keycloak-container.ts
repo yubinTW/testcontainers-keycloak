@@ -1,6 +1,7 @@
 import { GenericContainer, StartedTestContainer } from 'testcontainers'
 import { AbstractStartedContainer } from 'testcontainers/dist/modules/abstract-started-container'
 import { LogWaitStrategy } from 'testcontainers/dist/wait-strategy'
+import { ClientSecret, KeycloakClient, KeycloakRealm, KeycloakUser } from './types'
 import qs from 'qs'
 
 export class KeycloakContainer extends GenericContainer {

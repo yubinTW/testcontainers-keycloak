@@ -1,4 +1,4 @@
-type KeycloakRealm = {
+export type KeycloakRealm = {
   id: string
   realm: string
   notBefore: number
@@ -122,7 +122,7 @@ type KeycloakRealm = {
   }
 }
 
-type KeycloakUser = {
+export type KeycloakUser = {
   id: string
   createdTimestamp: number
   username: string
@@ -143,7 +143,7 @@ type KeycloakUser = {
   }
 }
 
-type KeycloakClient = {
+export type KeycloakClient = {
   id: string
   clientId: string
   surrogateAuthRequired: boolean
@@ -175,7 +175,7 @@ type KeycloakClient = {
   }
 }
 
-type ClientSecret = {
+export type ClientSecret = {
   type: string
   value: string
 }

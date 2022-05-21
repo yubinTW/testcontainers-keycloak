@@ -1,6 +1,6 @@
 # Testcontainers-Keycloak
 
-A testcontainers for 
+A testcontainers for keycloak
 
 https://www.npmjs.com/package/testcontainers-keycloak
 

@@ -1,7 +1,7 @@
 {
   "name": "testcontainers-keycloak",
   "author": "Yubin, Hsu",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "dist/keycloak-container",
   "types": "dist/keycloak-container",
   "keywords": [
