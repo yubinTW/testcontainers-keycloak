@@ -56,8 +56,25 @@ describe('Keycloak Container Test', () => {
     expect(clientSecret.value).toBe('client01Secret')
   })
 
-  it('should get sccess token', async () => {
+  it('should get access_token', async () => {
     const accessToken = await keycloak.getAccessToken('demo', 'user01', 'user01password', 'client01', 'client01Secret')
     expect(accessToken).toBeTruthy()
+  })
+
+  it('should not get access_token when given a fake user', async () => {
+    await expect(
+      keycloak.getAccessToken('demo', 'fakeUser', 'user01password', 'client01', 'client01Secret')
+    ).rejects.toThrow()
+  })
+
+  it('should get id_token', async () => {
+    const idToken = await keycloak.getIdToken('demo', 'user01', 'user01password', 'client01', 'client01Secret')
+    expect(idToken).toBeTruthy()
+  })
+
+  it('should not get id_token when given a fake user', async () => {
+    await expect(
+      keycloak.getIdToken('demo', 'fakeUser', 'user01password', 'client01', 'client01Secret')
+    ).rejects.toThrow()
   })
 })

@@ -2,6 +2,7 @@ import { GenericContainer, StartedTestContainer } from 'testcontainers'
 import { AbstractStartedContainer } from 'testcontainers/dist/modules/abstract-started-container'
 import { LogWaitStrategy } from 'testcontainers/dist/wait-strategy'
 import { ClientSecret, KeycloakClient, KeycloakRealm, KeycloakUser } from './types'
+import axios from 'axios'
 import qs from 'qs'
 
 export class KeycloakContainer extends GenericContainer {
@@ -165,9 +166,11 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     client_id: string,
     client_secret: string
   ) {
-    const tokenEndpoint = `${this.SERVER}/auth/realms/${realmName}/protocol/openid-connect/token`
+    const tokenEndpoint = `http://${this.getHost()}:${this.getMappedPort(
+      8080
+    )}/auth/realms/${realmName}/protocol/openid-connect/token`
 
-    const data = qs.stringify({
+    const payload = qs.stringify({
       username,
       password,
       client_id,
@@ -175,17 +178,41 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
       grant_type: 'password'
     })
 
-    const curlCommand = `curl ${tokenEndpoint} -X POST -d ${data}`
+    try {
+      const response = await axios.post(tokenEndpoint, payload)
+      const accessToken: string = response.data['access_token']
+      return accessToken
+    } catch (error) {
+      throw new Error(`Failed to get access_token: ${error}`)
+    }
+  }
+
+  public async getIdToken(
+    realmName: string,
+    username: string,
+    password: string,
+    client_id: string,
+    client_secret: string
+  ) {
+    const tokenEndpoint = `http://${this.getHost()}:${this.getMappedPort(
+      8080
+    )}/auth/realms/${realmName}/protocol/openid-connect/token`
+
+    const payload = qs.stringify({
+      username,
+      password,
+      client_id,
+      client_secret,
+      grant_type: 'password',
+      scope: 'openid'
+    })
 
     try {
-      const curlResult = await this.runCmd(curlCommand)
-      const accessToken: string = JSON.parse(curlResult)['access_token']
-      if (accessToken && accessToken.length > 0) return Promise.resolve(accessToken)
-      else {
-        return Promise.reject(`Failed to get aaccess token: ${curlResult}`)
-      }
+      const response = await axios.post(tokenEndpoint, payload)
+      const idToken: string = response.data['id_token']
+      return idToken
     } catch (error) {
-      return Promise.reject(`Failed to get aaccess token: ${error}`)
+      throw new Error(`Failed to get id_token: ${error}`)
     }
   }
 }

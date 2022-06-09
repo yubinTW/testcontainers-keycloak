@@ -4,6 +4,12 @@ A testcontainers for keycloak
 
 https://www.npmjs.com/package/testcontainers-keycloak
 
+## Installation
+
+```
+npm i -D testcontainers-keycloak
+```
+
 ## Usage
 
 ```typescript
@@ -30,5 +36,5 @@ await keycloak.createClient(
     )
 
 // your test case ...
-
+const accessToken = await keycloak.getAccessToken('demo', 'user01', 'user01password', 'client01', 'client01Secret')
 ```
