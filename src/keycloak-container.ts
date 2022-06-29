@@ -67,7 +67,10 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
   }
 
   /**
-   * start an authenticated session
+   * Start an authenticated session on this keycloak server
+   * @params realmName th3 realm name you want to config
+   * @params user the user who starting this session, usually the username of admin
+   * @params user password, usually is the password of admin
    */
   public async configCredentials(realmName: string, user: string, password: string) {
     return await this.runCmd(
@@ -163,8 +166,8 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     realmName: string,
     username: string,
     password: string,
-    client_id: string,
-    client_secret: string
+    clientId: string,
+    clientSecret: string
   ) {
     const tokenEndpoint = `http://${this.getHost()}:${this.getMappedPort(
       8080
@@ -173,15 +176,19 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     const payload = qs.stringify({
       username,
       password,
-      client_id,
-      client_secret,
+      client_id: clientId,
+      client_secret: clientSecret,
       grant_type: 'password'
     })
 
     try {
       const response = await axios.post(tokenEndpoint, payload)
       const accessToken: string = response.data['access_token']
-      return accessToken
+      if (accessToken) {
+        return accessToken
+      } else {
+        throw new Error(`Failed to get access_token: access_token undefined`)
+      }
     } catch (error) {
       throw new Error(`Failed to get access_token: ${error}`)
     }
@@ -191,8 +198,8 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     realmName: string,
     username: string,
     password: string,
-    client_id: string,
-    client_secret: string
+    clientId: string,
+    clientSecret: string
   ) {
     const tokenEndpoint = `http://${this.getHost()}:${this.getMappedPort(
       8080
@@ -201,8 +208,8 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     const payload = qs.stringify({
       username,
       password,
-      client_id,
-      client_secret,
+      client_id: clientId,
+      client_secret: clientSecret,
       grant_type: 'password',
       scope: 'openid'
     })
@@ -210,7 +217,11 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     try {
       const response = await axios.post(tokenEndpoint, payload)
       const idToken: string = response.data['id_token']
-      return idToken
+      if (idToken) {
+        return idToken
+      } else {
+        throw new Error(`Failed to get id_token: id_token undefined`)
+      }
     } catch (error) {
       throw new Error(`Failed to get id_token: ${error}`)
     }
