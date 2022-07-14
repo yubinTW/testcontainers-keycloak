@@ -5,6 +5,7 @@ describe('Keycloak Container Test', () => {
 
   beforeAll(async () => {
     keycloak = await new KeycloakContainer()
+      .withStartupTimeout(600_000)
       .withAdminUsername('admin')
       .withAdminPassword('admin')
       .withExposedPorts(8080)
