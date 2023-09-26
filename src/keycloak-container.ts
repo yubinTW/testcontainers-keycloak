@@ -1,10 +1,7 @@
-import { GenericContainer, StartedTestContainer } from 'testcontainers'
-import { AbstractStartedContainer } from 'testcontainers/dist/modules/abstract-started-container'
-import { LogWaitStrategy } from 'testcontainers/dist/wait-strategy'
+import { GenericContainer, StartedTestContainer, AbstractStartedContainer, Wait } from 'testcontainers'
 import { ClientSecret, KeycloakClient, KeycloakRealm, KeycloakUser } from './types'
 import axios from 'axios'
 import qs from 'qs'
-
 export class KeycloakContainer extends GenericContainer {
   private waitingLog = 'Admin console listening on http://127.0.0.1:9990'
   private adminUsername = 'admin'
@@ -29,9 +26,9 @@ export class KeycloakContainer extends GenericContainer {
   }
 
   public async start(): Promise<StartedKeycloakContainer> {
-    this.withWaitStrategy(new LogWaitStrategy(this.waitingLog))
-      .withEnv('KEYCLOAK_USER', this.adminUsername)
-      .withEnv('KEYCLOAK_PASSWORD', this.adminPassword)
+    this.withWaitStrategy(Wait.forLogMessage(this.waitingLog))
+      .withEnvironment({ KEYCLOAK_USER: this.adminUsername })
+      .withEnvironment({ KEYCLOAK_PASSWORD: this.adminPassword })
     return new StartedKeycloakContainer(await super.start(), this.adminUsername, this.adminPassword)
   }
 }
