@@ -1,4 +1,5 @@
-import { KeycloakContainer, StartedKeycloakContainer } from './keycloak-container'
+import { describe, it, expect, beforeAll } from 'vitest'
+import { KeycloakContainer, StartedKeycloakContainer } from '../src/keycloak-container'
 
 describe('Keycloak Container Test', () => {
   let keycloak: StartedKeycloakContainer
