@@ -58,6 +58,10 @@ describe('Keycloak Container Test', () => {
     expect(clientSecret.value).toBe('client01Secret')
   })
 
+  it.fails('when get cid with a non-exist client', async () => {
+     await keycloak.getCidByClientId('demo','non-exist-client-id')
+  })
+
   it('should get access_token', async () => {
     const accessToken = await keycloak.getAccessToken('demo', 'user01', 'user01password', 'client01', 'client01Secret')
     expect(accessToken).toBeTruthy()
@@ -78,5 +82,19 @@ describe('Keycloak Container Test', () => {
     await expect(
       keycloak.getIdToken('demo', 'fakeUser', 'user01password', 'client01', 'client01Secret')
     ).rejects.toThrow()
+  })
+
+  it('should return admin username', () => {
+    const username = keycloak.getAdminUsername()
+    expect(username).toBe('admin')
+  })
+
+  it('should return admin password', () => {
+    const password = keycloak.getAdminPassword()
+    expect(password).toBe('admin')
+  })
+
+  it.fails('when get a non-exist user', async () => {
+    await keycloak.getUserIdByUsername('demo', 'non-exist-user')
   })
 })
