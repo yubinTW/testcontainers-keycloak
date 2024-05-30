@@ -2,17 +2,24 @@ import { GenericContainer, StartedTestContainer, AbstractStartedContainer, Wait 
 import { ClientSecret, KeycloakClient, KeycloakRealm, KeycloakUser } from './types'
 import axios from 'axios'
 import qs from 'qs'
-export class KeycloakContainer extends GenericContainer {
-  private waitingLog = 'Admin console listening on http://127.0.0.1:9990'
+export class Keycloak24Container extends GenericContainer {
+  private waitingLog: string | RegExp = /Listening on:/
+  private startCmd: string[] = ['start-dev']
   private adminUsername = 'admin'
   private adminPassword = 'admin'
 
-  constructor(image: string = 'quay.io/keycloak/keycloak:16.1.1') {
+  constructor(image: string = 'quay.io/keycloak/keycloak:24.0.1') {
     super(image)
   }
 
-  public withWaitingLog(log: string) {
-    this.waitingLog = log
+  public withWaitingLog(message: string | RegExp) {
+    this.waitingLog = message
+    return this
+  }
+
+  public withStartCommand(command: string[]) {
+    this.startCmd = command
+    return this
   }
 
   public withAdminUsername(username: string) {
@@ -27,14 +34,16 @@ export class KeycloakContainer extends GenericContainer {
 
   public async start(): Promise<StartedKeycloakContainer> {
     this.withWaitStrategy(Wait.forLogMessage(this.waitingLog))
-      .withEnvironment({ KEYCLOAK_USER: this.adminUsername })
-      .withEnvironment({ KEYCLOAK_PASSWORD: this.adminPassword })
+      .withEnvironment({ KEYCLOAK_ADMIN: this.adminUsername })
+      .withEnvironment({ KEYCLOAK_ADMIN_PASSWORD: this.adminPassword })
+      .withStartupTimeout(120000)
+      .withCommand(this.startCmd)
     return new StartedKeycloakContainer(await super.start(), this.adminUsername, this.adminPassword)
   }
 }
 
 export class StartedKeycloakContainer extends AbstractStartedContainer {
-  private KCADM = `/opt/jboss/keycloak/bin/kcadm.sh`
+  private KCADM = `/opt/keycloak/bin/kcadm.sh`
   private SERVER = 'http://localhost:8080'
 
   constructor(
@@ -71,7 +80,7 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
    */
   public async configCredentials(realmName: string, user: string, password: string) {
     return await this.runCmd(
-      `${this.KCADM} config credentials --server ${this.SERVER}/auth --realm ${realmName} --user ${user} --password ${password}`
+      `${this.KCADM} config credentials --server ${this.SERVER} --realm ${realmName} --user ${user} --password ${password}`
     )
   }
 
@@ -90,10 +99,11 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
     username: string,
     firstName: string,
     lastName: string,
+    email: string,
     enabled: boolean = true
   ) {
     return await this.runCmd(
-      `${this.KCADM} create users -r ${realmName} -s username=${username} -s firstName=${firstName} -s lastName=${lastName} -s enabled=${enabled}`
+      `${this.KCADM} create users -r ${realmName} -s username=${username} -s firstName=${firstName} -s lastName=${lastName} -s email=${email} -s enabled=${enabled}`
     )
   }
 
@@ -168,7 +178,7 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
   ) {
     const tokenEndpoint = `http://${this.getHost()}:${this.getMappedPort(
       8080
-    )}/auth/realms/${realmName}/protocol/openid-connect/token`
+    )}/realms/${realmName}/protocol/openid-connect/token`
 
     const payload = qs.stringify({
       username,
@@ -187,6 +197,7 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
         throw new Error(`Failed to get access_token: access_token undefined`)
       }
     } catch (error) {
+      console.log(error)
       throw new Error(`Failed to get access_token: ${error}`)
     }
   }
@@ -200,7 +211,7 @@ export class StartedKeycloakContainer extends AbstractStartedContainer {
   ) {
     const tokenEndpoint = `http://${this.getHost()}:${this.getMappedPort(
       8080
-    )}/auth/realms/${realmName}/protocol/openid-connect/token`
+    )}/realms/${realmName}/protocol/openid-connect/token`
 
     const payload = qs.stringify({
       username,
