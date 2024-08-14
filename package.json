@@ -29,17 +29,17 @@
     "fix-prettier": "prettier --write \"./{src,test}/**/*.ts\""
   },
   "dependencies": {
-    "axios": "^1.7.2",
-    "qs": "^6.12.1",
-    "testcontainers": "^10.9.0"
+    "axios": "^1.7.4",
+    "qs": "^6.13.0",
+    "testcontainers": "^10.11.0"
   },
   "devDependencies": {
-    "@types/dockerode": "^3.3.29",
-    "@types/node": "^18.19.33",
+    "@types/dockerode": "^3.3.31",
+    "@types/node": "^22.2.0",
     "@types/qs": "^6.9.15",
-    "@vitest/coverage-v8": "^0.34.6",
-    "prettier": "^3.2.5",
-    "typescript": "^5.4.5",
-    "vitest": "^0.34.6"
+    "@vitest/coverage-v8": "^2.0.5",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   }
 }
